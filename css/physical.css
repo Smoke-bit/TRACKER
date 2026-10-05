@@ -1,0 +1,935 @@
+/* =========================================
+GLOBAL
+========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  }
+
+:root {
+--bg: #0b0f14;
+--surface: #111720;
+--surface-light: #171e28;
+--border: #252e3a;
+
+--text: #f1f4f7;
+--muted: #8993a1;
+--accent: #d9ff4f;
+--accent-dark: #b7dc32;
+
+--danger: #ff6262;
+
+--radius: 14px;
+
+
+}
+
+html {
+scroll-behavior: smooth;
+}
+
+body {
+font-family: Arial, Helvetica, sans-serif;
+background: var(--bg);
+color: var(--text);
+line-height: 1.5;
+}
+
+/* =========================================
+APP HEADER
+========================================= */
+
+.app-header {
+width: min(1200px, 92%);
+margin: 0 auto;
+padding: 42px 0 30px;
+
+
+display: flex;
+align-items: flex-end;
+justify-content: space-between;
+
+border-bottom: 1px solid var(--border);
+
+
+}
+
+.app-label,
+.small-label,
+.section-date,
+.metric-card label,
+.chart-label,
+.chart-unit,
+.stat-label {
+font-size: 11px;
+font-weight: 700;
+letter-spacing: 1.5px;
+color: var(--muted);
+}
+
+.header-left h1 {
+margin-top: 8px;
+font-size: clamp(28px, 4vw, 48px);
+font-weight: 700;
+letter-spacing: -1.5px;
+}
+
+.completion-box {
+text-align: right;
+}
+
+.completion-box span {
+display: block;
+font-size: 10px;
+letter-spacing: 1.5px;
+color: var(--muted);
+}
+
+.completion-box strong {
+display: block;
+margin-top: 4px;
+font-size: 28px;
+color: var(--accent);
+}
+
+/* =========================================
+MAIN DASHBOARD
+========================================= */
+
+.dashboard {
+width: min(1200px, 92%);
+margin: 0 auto;
+padding: 35px 0 70px;
+}
+
+/* =========================================
+MONTH CONTROLS
+========================================= */
+
+.month-controls {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 20px;
+margin-bottom: 30px;
+}
+
+.month-selector {
+display: flex;
+align-items: center;
+gap: 18px;
+}
+
+.current-month {
+min-width: 180px;
+text-align: center;
+}
+
+.current-month h2 {
+margin-top: 3px;
+font-size: 22px;
+}
+
+.month-arrow {
+width: 42px;
+height: 42px;
+
+
+border: 1px solid var(--border);
+border-radius: 10px;
+
+background: var(--surface);
+color: var(--text);
+
+font-size: 18px;
+cursor: pointer;
+
+transition: 0.2s ease;
+
+
+}
+
+.month-arrow:hover {
+background: var(--surface-light);
+border-color: var(--accent);
+color: var(--accent);
+}
+
+/* =========================================
+BUTTONS
+========================================= */
+
+button {
+font-family: inherit;
+}
+
+.primary-button,
+.secondary-button {
+border-radius: 9px;
+padding: 11px 17px;
+
+
+font-size: 13px;
+font-weight: 700;
+
+cursor: pointer;
+transition: 0.2s ease;
+
+
+}
+
+.primary-button {
+background: var(--accent);
+color: #0a0d10;
+border: 1px solid var(--accent);
+}
+
+.primary-button:hover {
+background: var(--accent-dark);
+border-color: var(--accent-dark);
+}
+
+.secondary-button {
+background: var(--surface);
+color: var(--text);
+border: 1px solid var(--border);
+}
+
+.secondary-button:hover {
+border-color: var(--accent);
+color: var(--accent);
+}
+
+/* =========================================
+SECTIONS
+========================================= */
+
+.section {
+margin-top: 22px;
+padding: 25px;
+
+
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+
+
+}
+
+.section-heading {
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+margin-bottom: 25px;
+
+
+}
+
+.section-heading > div {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.section-number {
+color: var(--accent);
+font-size: 11px;
+font-weight: 700;
+letter-spacing: 1px;
+}
+
+.section-heading h2 {
+font-size: 20px;
+letter-spacing: -0.4px;
+}
+
+/* =========================================
+CALENDAR
+========================================= */
+
+.calendar-weekdays,
+.calendar-grid {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+gap: 7px;
+}
+
+.calendar-weekdays {
+margin-bottom: 7px;
+}
+
+.calendar-weekdays span {
+padding: 8px;
+text-align: center;
+
+
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 1px;
+
+color: var(--muted);
+
+
+}
+
+.calendar-grid {
+min-height: 260px;
+}
+
+.calendar-day {
+min-height: 75px;
+
+padding: 10px;
+
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 8px;
+
+color: var(--text);
+
+cursor: pointer;
+transition: 0.2s ease;
+
+
+}
+
+.calendar-day:hover {
+border-color: var(--accent);
+}
+
+.calendar-day.today {
+border-color: var(--accent);
+}
+
+.calendar-day.empty {
+background: transparent;
+border: none;
+cursor: default;
+}
+
+.calendar-day-number {
+font-size: 13px;
+font-weight: 700;
+}
+
+.calendar-day.today .calendar-day-number {
+color: var(--accent);
+}
+
+/* =========================================
+GOALS
+========================================= */
+
+.goals-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+
+margin-bottom: 20px;
+
+
+}
+
+.goals-header p {
+margin-top: 4px;
+color: var(--muted);
+font-size: 13px;
+}
+
+.goals-container {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 10px;
+}
+
+.goal-card {
+min-height: 65px;
+
+
+padding: 15px 17px;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 10px;
+
+
+}
+
+.goal-card h3 {
+font-size: 15px;
+}
+
+.goal-card span {
+color: var(--muted);
+font-size: 12px;
+}
+
+.goal-action {
+width: 34px;
+height: 34px;
+
+
+border: 1px solid var(--border);
+border-radius: 50%;
+
+background: transparent;
+color: var(--muted);
+
+cursor: pointer;
+
+
+}
+
+.goal-action:hover {
+border-color: var(--accent);
+color: var(--accent);
+}
+
+/* =========================================
+EMPTY STATE
+========================================= */
+
+.empty-state {
+padding: 45px 20px;
+
+
+text-align: center;
+
+border: 1px dashed var(--border);
+border-radius: 10px;
+
+
+}
+
+.empty-icon {
+width: 42px;
+height: 42px;
+
+
+margin: 0 auto 14px;
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+border: 1px solid var(--border);
+border-radius: 50%;
+
+color: var(--accent);
+font-size: 22px;
+
+
+}
+
+.empty-state h3 {
+font-size: 17px;
+}
+
+.empty-state p {
+margin: 7px 0 18px;
+
+
+color: var(--muted);
+font-size: 13px;
+
+
+}
+
+/* =========================================
+METRICS
+========================================= */
+
+.metrics-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 10px;
+}
+
+.metric-card {
+padding: 17px;
+
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 10px;
+
+
+}
+
+.metric-card input {
+width: 100%;
+
+
+margin-top: 10px;
+
+border: none;
+outline: none;
+
+background: transparent;
+color: var(--text);
+
+font-size: 25px;
+font-weight: 700;
+
+
+}
+
+.metric-card input::placeholder {
+color: #3f4853;
+}
+
+.input-with-unit {
+display: flex;
+align-items: center;
+gap: 7px;
+}
+
+.input-with-unit input {
+min-width: 0;
+}
+
+.input-with-unit span {
+color: var(--muted);
+font-size: 11px;
+font-weight: 700;
+}
+
+/* =========================================
+PROGRESS
+========================================= */
+
+.progress-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+
+
+margin-bottom: 12px;
+
+
+}
+
+.progress-card {
+padding: 20px;
+
+
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 10px;
+
+
+}
+
+.progress-card strong {
+display: block;
+
+
+margin-top: 8px;
+
+font-size: 32px;
+letter-spacing: -1px;
+
+
+}
+
+.progress-card p {
+margin-top: 2px;
+
+
+color: var(--muted);
+font-size: 12px;
+
+
+}
+
+/* =========================================
+CHART
+========================================= */
+
+.chart-container {
+margin-top: 12px;
+
+
+padding: 22px;
+
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 10px;
+
+
+}
+
+.chart-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+
+
+margin-bottom: 20px;
+
+
+}
+
+.chart-header h3 {
+margin-top: 4px;
+font-size: 17px;
+}
+
+.chart-header > span {
+font-size: 10px;
+letter-spacing: 1px;
+color: var(--muted);
+}
+
+.chart-wrapper {
+position: relative;
+width: 100%;
+height: 260px;
+}
+
+/* =========================================
+NOTES
+========================================= */
+
+#daily-notes {
+width: 100%;
+min-height: 150px;
+
+
+padding: 15px;
+
+resize: vertical;
+
+border: 1px solid var(--border);
+border-radius: 9px;
+
+outline: none;
+
+background: var(--bg);
+color: var(--text);
+
+font-family: inherit;
+font-size: 14px;
+
+
+}
+
+#daily-notes::placeholder {
+color: #59636f;
+}
+
+#daily-notes:focus {
+border-color: var(--accent);
+}
+
+/* =========================================
+MODALS
+========================================= */
+
+.modal {
+position: fixed;
+inset: 0;
+
+
+z-index: 1000;
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+padding: 20px;
+
+
+}
+
+.modal.hidden {
+display: none;
+}
+
+.modal-overlay {
+position: absolute;
+inset: 0;
+
+
+background: rgba(0, 0, 0, 0.72);
+
+
+}
+
+.modal-content {
+position: relative;
+
+
+width: min(500px, 100%);
+
+padding: 25px;
+
+background: var(--surface);
+
+border: 1px solid var(--border);
+border-radius: 14px;
+
+box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+
+}
+
+.modal-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+
+
+margin-bottom: 25px;
+
+
+}
+
+.modal-header h2 {
+margin-top: 4px;
+font-size: 22px;
+}
+
+.close-button {
+width: 34px;
+height: 34px;
+
+
+border: 1px solid var(--border);
+border-radius: 8px;
+
+background: transparent;
+color: var(--muted);
+
+font-size: 22px;
+
+cursor: pointer;
+
+
+}
+
+.close-button:hover {
+color: var(--text);
+border-color: var(--text);
+}
+
+/* =========================================
+FORM
+========================================= */
+
+.form-group {
+margin-bottom: 17px;
+}
+
+.form-group label {
+display: block;
+
+
+margin-bottom: 7px;
+
+font-size: 12px;
+font-weight: 700;
+color: var(--muted);
+
+
+}
+
+.form-group input,
+.form-group select {
+width: 100%;
+
+
+padding: 12px 13px;
+
+border: 1px solid var(--border);
+border-radius: 8px;
+
+outline: none;
+
+background: var(--bg);
+color: var(--text);
+
+font-family: inherit;
+font-size: 14px;
+
+
+}
+
+.form-group input:focus,
+.form-group select:focus {
+border-color: var(--accent);
+}
+
+.form-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+}
+
+.modal-actions {
+display: flex;
+justify-content: flex-end;
+gap: 10px;
+
+
+margin-top: 25px;
+
+
+}
+
+/* =========================================
+FOOTER
+========================================= */
+
+.app-footer {
+display: flex;
+justify-content: space-between;
+
+
+margin-top: 45px;
+padding-top: 20px;
+
+border-top: 1px solid var(--border);
+
+color: var(--muted);
+
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 1.3px;
+
+
+}
+
+/* =========================================
+RESPONSIVE
+========================================= */
+
+@media (max-width: 800px) {
+
+
+.app-header {
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.progress-grid {
+    grid-template-columns: 1fr;
+}
+
+.goals-container {
+    grid-template-columns: 1fr;
+}
+
+.calendar-day {
+    min-height: 60px;
+}
+
+
+}
+
+@media (max-width: 600px) {
+
+
+.app-header {
+    width: 94%;
+    padding-top: 28px;
+}
+
+.dashboard {
+    width: 94%;
+    padding-top: 25px;
+}
+
+.month-controls {
+    align-items: stretch;
+    flex-direction: column;
+}
+
+.month-selector {
+    justify-content: space-between;
+}
+
+.current-month {
+    flex: 1;
+}
+
+.primary-button {
+    width: 100%;
+}
+
+.section {
+    padding: 18px;
+}
+
+.section-heading {
+    margin-bottom: 18px;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+    gap: 4px;
+}
+
+.calendar-day {
+    min-height: 48px;
+    padding: 7px;
+}
+
+.calendar-day-number {
+    font-size: 11px;
+}
+
+.calendar-weekdays span {
+    padding: 5px 2px;
+    font-size: 8px;
+}
+
+.metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+}
+
+.metric-card {
+    padding: 13px;
+}
+
+.metric-card input {
+    font-size: 21px;
+}
+
+.goals-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.secondary-button {
+    width: 100%;
+}
+
+.form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+.app-footer {
+    flex-direction: column;
+    gap: 7px;
+}
+
+
+}
