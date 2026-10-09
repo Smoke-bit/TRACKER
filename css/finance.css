@@ -1,0 +1,1400 @@
+/* ===============================
+   RESET
+   =============================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    background: #090c10;
+    color: #e8edf2;
+
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+
+/* ===============================
+   HEADER
+   =============================== */
+
+.finance-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 24px 40px;
+
+    border-bottom: 1px solid #1c232c;
+
+    background: #0b0f14;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.back-button {
+    color: #8b97a5;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: color 0.2s ease;
+}
+
+.back-button:hover {
+    color: #f1f5f9;
+}
+
+.finance-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+
+.finance-header p {
+    margin-top: 4px;
+
+    color: #697583;
+
+    font-size: 12px;
+}
+
+.header-right {
+    text-align: right;
+}
+
+#current-date {
+    color: #aeb8c3;
+    font-size: 12px;
+}
+
+#current-time {
+    margin-top: 3px;
+
+    color: #687583;
+
+    font-size: 11px;
+}
+
+
+/* ===============================
+   MAIN
+   =============================== */
+
+.finance-main {
+    width: min(1400px, 92%);
+    margin: 0 auto;
+
+    padding: 32px 0 60px;
+}
+/* ===============================
+   FINANCE SECTIONS
+   =============================== */
+
+.finance-section {
+    margin-bottom: 34px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+}
+
+.section-header h2 {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.section-header p {
+    margin-top: 5px;
+
+    color: #697583;
+    font-size: 12px;
+}
+
+.today-total {
+    color: #e8edf2;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+/* ===============================
+   EXPENSE ENTRY
+   =============================== */
+
+.expense-entry {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+
+    padding: 18px;
+
+    background: #10151c;
+    border: 1px solid #202832;
+    border-radius: 10px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.input-group:first-child {
+    flex: 1;
+}
+
+.input-group label {
+    color: #7d8996;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+.input-group input {
+    height: 40px;
+
+    padding: 0 12px;
+
+    background: #0b1016;
+    border: 1px solid #252e38;
+    border-radius: 7px;
+
+    color: #e8edf2;
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.input-group input:focus {
+    background: #0d131a;
+    border-color: #465463;
+}
+
+.input-group input::placeholder {
+    color: #4f5b68;
+}
+
+.add-expense-button {
+    height: 40px;
+
+    padding: 0 18px;
+
+    border: 1px solid #364250;
+    border-radius: 7px;
+
+    background: #1b232d;
+    color: #dce3e9;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.add-expense-button:hover {
+    background: #252f3a;
+    border-color: #4a5867;
+}
+
+
+/* ===============================
+   SUMMARY
+   =============================== */
+
+.finance-summary-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 14px;
+}
+
+.summary-card {
+    padding: 18px;
+
+    background: #10151c;
+    border: 1px solid #202832;
+    border-radius: 10px;
+}
+
+.summary-label {
+    display: block;
+
+    color: #697583;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.summary-value {
+    display: block;
+
+    margin-top: 10px;
+
+    color: #edf2f6;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+
+/* ===============================
+   MOBILE
+   =============================== */
+
+@media (max-width: 700px) {
+
+    .finance-header {
+        padding: 20px;
+    }
+
+    .finance-main {
+        width: calc(100% - 30px);
+        padding-top: 24px;
+    }
+
+    .header-right {
+        display: none;
+    }
+
+    .expense-entry {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .add-expense-button {
+        width: 100%;
+    }
+
+    .finance-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* ===============================
+   CALENDAR DROPDOWN
+   =============================== */
+
+.selected-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-width: 160px;
+    height: 34px;
+
+    padding: 0 12px;
+
+    border: 1px solid #252e38;
+    border-radius: 7px;
+
+    background: #10151c;
+    color: #dce3e9;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.selected-date:hover {
+    background: #171e27;
+    border-color: #3b4754;
+}
+
+.date-chevron {
+    color: #6f7c89;
+    font-size: 11px;
+}
+
+.calendar-dropdown {
+    position: absolute;
+    z-index: 100;
+
+    width: 280px;
+    margin-top: -8px;
+
+    padding: 14px;
+
+    background: #10151c;
+    border: 1px solid #2a3540;
+    border-radius: 10px;
+
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.35);
+}
+
+.calendar-dropdown.hidden {
+    display: none;
+}
+.finance-date-controls {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 18px;
+}
+/* ===============================
+   FINANCE CALENDAR
+   =============================== */
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.calendar-month-title {
+    color: #e5ebf0;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.calendar-month-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.calendar-month-controls button {
+    width: 26px;
+    height: 26px;
+
+    border: 1px solid #252e38;
+    border-radius: 5px;
+
+    background: #151c24;
+    color: #8d99a6;
+
+    cursor: pointer;
+}
+
+.calendar-month-controls button:hover {
+    background: #202934;
+    color: #edf2f6;
+}
+
+
+/* WEEKDAYS */
+
+.calendar-weekdays,
+.calendar-days {
+    display: grid;
+    grid-template-columns:
+        repeat(7, 1fr);
+
+    gap: 4px;
+}
+
+.calendar-weekdays {
+    margin-bottom: 5px;
+}
+
+.calendar-weekdays div {
+    color: #596673;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    text-align: center;
+}
+
+
+/* DAYS */
+
+.calendar-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    aspect-ratio: 1;
+
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #aeb8c2;
+
+    font-size: 11px;
+
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        color .15s ease,
+        border-color .15s ease;
+}
+
+button.calendar-day:hover {
+    background: #1a222c;
+    color: #f1f5f9;
+}
+
+.calendar-day.selected {
+    background: #293543;
+    border-color: #465666;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.calendar-day.empty {
+    cursor: default;
+}
+
+
+/* ===============================
+   EXPENSE LIST
+   =============================== */
+
+.expenses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin-top: 14px;
+}
+
+.expense-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 14px 16px;
+
+    background: #10151c;
+    border: 1px solid #202832;
+    border-radius: 9px;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.expense-item:hover {
+    background: #131a22;
+    border-color: #303b47;
+}
+
+.expense-item-name {
+    color: #dce3e9;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.expense-item-amount {
+    color: #e8edf2;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.empty-expenses {
+    padding: 28px 20px;
+
+    background: #0e1319;
+    border: 1px dashed #252e38;
+    border-radius: 9px;
+
+    color: #5f6b78;
+
+    font-size: 12px;
+    text-align: center;
+}
+
+
+.expense-item-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expense-menu-button {
+    width: 26px;
+    height: 26px;
+
+    border: 1px solid transparent;
+    border-radius: 5px;
+
+    background: transparent;
+    color: #66727f;
+
+    font-size: 16px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        color .15s ease,
+        border-color .15s ease;
+}
+
+.expense-menu-button:hover {
+    background: #1b232c;
+    border-color: #2d3844;
+    color: #dce3e9;
+}
+.expense-item {
+    cursor: context-menu;
+}
+
+.expense-context-menu {
+    position: fixed;
+    z-index: 2000;
+
+    min-width: 170px;
+
+    padding: 5px;
+
+    background: #10151c;
+    border: 1px solid #303944;
+    border-radius: 9px;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, .35);
+}
+
+.expense-context-menu button {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    padding: 10px 11px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: transparent;
+
+    color: #cbd3dc;
+
+    font-size: 12px;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.expense-context-menu button:hover {
+    background: #1a212a;
+    color: #ffffff;
+}
+
+.expense-context-menu
+.delete-expense-option {
+    color: #9ca7b3;
+}
+
+.expense-context-menu
+.delete-expense-option:hover {
+    background: #21191c;
+    color: #f1c4c9;
+}
+
+/* ===============================
+   FINANCE DATE NAVIGATION POLISH
+   =============================== */
+
+.date-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0 28px;
+}
+
+#previous-day,
+#next-day {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    background: #111820;
+    color: #e7edf5;
+    border: 1px solid #293440;
+    border-radius: 12px;
+
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+#previous-day:hover,
+#next-day:hover {
+    background: #1c2937;
+    border-color: #527ba5;
+    transform: translateY(-1px);
+}
+
+#selected-date {
+    min-width: 220px;
+    min-height: 46px;
+    padding: 10px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    background: #111820;
+    color: #f1f5f9;
+    border: 1px solid #293440;
+    border-radius: 12px;
+
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#selected-date:hover {
+    background: #17212c;
+    border-color: #527ba5;
+}
+
+.date-chevron {
+    color: #8496aa;
+    font-size: 14px;
+}
+
+@media (max-width: 480px) {
+    .date-navigation {
+        gap: 8px;
+    }
+
+    #previous-day,
+    #next-day {
+        width: 38px;
+        height: 40px;
+    }
+
+    #selected-date {
+        min-width: 0;
+        flex: 1;
+        padding: 9px 8px;
+        font-size: 14px;
+    }
+}
+/* Spending section heading and date */
+
+/* Spending heading date */
+#finance-date {
+    font-size: 50px;
+    font-weight: 750;
+    color: #f6f7f9;
+    line-height: 1.5;
+    margin-top: 8px;
+    letter-spacing: 0.2px;
+}
+
+
+/* ===============================
+   FINANCE UX POLISH — SPENDING
+   =============================== */
+
+/* Spending heading */
+.section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #f1f5f9;
+}
+
+/* Date below Spending */
+#finance-date {
+    font-size: 16px;
+    font-weight: 500;
+    color: #8998a9;
+    line-height: 1.4;
+    margin-top: 7px;
+    letter-spacing: 0;
+}
+
+/* Daily total */
+.today-total {
+    font-size: 26px;
+    font-weight: 750;
+    letter-spacing: -0.7px;
+    color: #f1f5f9;
+}
+
+/* Date navigation — use the actual HTML class */
+.finance-date-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0;
+}
+
+/* Previous and next buttons */
+#previous-day,
+#next-day {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111820;
+    color: #dce6f0;
+    border: 1px solid #293746;
+    border-radius: 11px;
+
+    font-size: 20px;
+    cursor: pointer;
+
+    transition: background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+}
+
+#previous-day:hover,
+#next-day:hover {
+    background: #1b2938;
+    border-color: #496681;
+    transform: translateY(-1px);
+}
+
+/* Selected date button */
+#selected-date {
+    min-width: 220px;
+    min-height: 44px;
+    height: auto;
+    padding: 10px 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    background: #111820;
+    color: #edf3f9;
+    border: 1px solid #293746;
+    border-radius: 11px;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#selected-date:hover {
+    background: #19232e;
+    border-color: #496681;
+}
+
+/* Expense entry panel */
+.expense-entry {
+    gap: 16px;
+    padding: 22px;
+    background: linear-gradient(145deg, #111821, #0e131a);
+    border: 1px solid #252f3b;
+    border-radius: 14px;
+}
+
+/* Input labels */
+.input-group label {
+    color: #a0adbb;
+    font-size: 12px;
+    letter-spacing: 0;
+}
+
+/* Input fields */
+.input-group input {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 9px;
+    font-size: 14px;
+}
+
+.input-group input:focus {
+    border-color: #56738f;
+    box-shadow: 0 0 0 3px rgba(86, 115, 143, 0.12);
+}
+
+/* Add expense button */
+.add-expense-button {
+    height: 44px;
+    padding: 0 22px;
+    border-radius: 9px;
+    background: #243548;
+    border-color: #3a526a;
+    color: #f1f5f9;
+    font-size: 13px;
+    transition: background 0.2s ease,
+                transform 0.2s ease;
+}
+
+.add-expense-button:hover {
+    background: #304960;
+    transform: translateY(-1px);
+}
+
+.add-expense-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+/* Expense cards */
+.expenses-list {
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.expense-item {
+    padding: 17px 19px;
+    background: #10161e;
+    border: 1px solid #222d38;
+    border-radius: 11px;
+    transition: background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+}
+
+.expense-item:hover {
+    background: #151e28;
+    border-color: #354657;
+    transform: translateY(-1px);
+}
+
+.expense-item-name {
+    font-size: 14px;
+    color: #e5ebf2;
+}
+
+.expense-item-amount {
+    font-size: 14px;
+    color: #f1f5f9;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Mobile adjustments */
+@media (max-width: 700px) {
+    .finance-date-controls {
+        gap: 8px;
+        margin: 20px 0;
+    }
+
+    #previous-day,
+    #next-day {
+        width: 40px;
+        height: 42px;
+    }
+
+    #selected-date {
+        min-width: 0;
+        flex: 1;
+        padding: 9px 6px;
+        font-size: 13px;
+    }
+
+    .today-total {
+        font-size: 22px;
+    }
+
+    .expense-entry {
+        padding: 16px;
+    }
+}
+
+/* ===============================
+   SUMMARY DASHBOARD POLISH
+   =============================== */
+
+.finance-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.summary-card {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    min-height: 130px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+
+    background: linear-gradient(145deg, #121a24, #0e131a);
+    border: 1px solid #263442;
+    border-radius: 14px;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+/* Subtle accent along the top */
+.summary-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #354e66;
+    opacity: 0.9;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    border-color: #40566c;
+    background: linear-gradient(145deg, #17212d, #10161e);
+}
+
+.summary-label {
+    color: #9baaba;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.summary-value {
+    display: block;
+    margin-top: 0;
+
+    color: #f1f5f9;
+    font-size: clamp(22px, 2.4vw, 29px);
+    font-weight: 750;
+    letter-spacing: -0.7px;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Responsive layout */
+@media (max-width: 700px) {
+    .finance-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .summary-card {
+        min-height: 105px;
+        padding: 20px;
+        gap: 10px;
+    }
+
+    .summary-value {
+        font-size: 25px;
+    }
+}
+
+/* ===============================
+   FINAL FINANCE RESPONSIVE POLISH
+   =============================== */
+
+.finance-main {
+    width: min(1100px, calc(100% - 48px));
+}
+
+.finance-section {
+    margin-bottom: 38px;
+}
+
+.section-header {
+    margin-bottom: 22px;
+}
+
+.expenses-list {
+    margin-top: 20px;
+}
+
+/* Keyboard accessibility */
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #6688aa;
+    outline-offset: 3px;
+}
+
+/* Prevent long expense names from breaking the layout */
+.expense-item {
+    gap: 14px;
+    min-width: 0;
+}
+
+.expense-item-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.expense-item-right {
+    flex-shrink: 0;
+}
+
+/* Tablet and mobile */
+@media (max-width: 700px) {
+    .finance-main {
+        width: calc(100% - 32px);
+        padding-top: 24px;
+    }
+
+    .finance-header {
+        padding: 18px 16px;
+    }
+
+    .header-left {
+        gap: 14px;
+    }
+
+    .finance-header h1 {
+        font-size: 20px;
+    }
+
+    .section-header {
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .section-header h2 {
+        font-size: 20px;
+    }
+
+    #finance-date {
+        font-size: 15px;
+    }
+
+    .expense-item {
+        padding: 15px;
+    }
+
+    .finance-footer {
+        padding: 22px 16px;
+    }
+}
+
+@media (max-width: 380px) {
+    .finance-main {
+        width: calc(100% - 24px);
+    }
+
+    .finance-date-controls {
+        gap: 6px;
+    }
+
+    #previous-day,
+    #next-day {
+        width: 34px;
+        height: 38px;
+    }
+
+    #selected-date {
+        font-size: 12px;
+    }
+
+    .today-total {
+        font-size: 19px;
+    }
+}
+
+/* ===============================
+   MONTHLY SPENDING CHART
+   =============================== */
+
+.monthly-chart-card {
+    margin-top: 18px;
+    padding: 24px;
+    background: linear-gradient(145deg, #171b2b, #111522);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+}
+
+.monthly-chart-total {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.monthly-chart-total span {
+    color: #929bb0;
+    font-size: 13px;
+}
+
+.monthly-chart-total strong {
+    color: #f1f5f9;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.monthly-chart-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+#monthly-spending-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 180px;
+    overflow: visible;
+}
+
+@media (max-width: 600px) {
+    .monthly-chart-card {
+        padding: 16px;
+    }
+
+    #monthly-spending-chart {
+        min-height: 150px;
+    }
+
+    .monthly-chart-total strong {
+        font-size: 24px;
+    }
+}
+
+
+/* ===============================
+   MONTHLY CHART — PREMIUM LOOK
+   =============================== */
+
+.monthly-chart-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #191e30, #111522);
+    border: 1px solid rgba(165, 180, 252, 0.12);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+}
+
+.monthly-chart-total span {
+    color: #929bb0;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+
+.monthly-chart-total strong {
+    display: block;
+    margin-top: 3px;
+    color: #f8fafc;
+    font-size: 30px;
+    font-weight: 750;
+    letter-spacing: -0.8px;
+}
+
+.monthly-chart-container {
+    position: relative;
+    width: 100%;
+    margin-top: 12px;
+}
+
+#monthly-spending-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+/* Chart labels */
+#monthly-spending-chart text {
+    font-family: inherit;
+    user-select: none;
+}
+
+/* Line animation */
+#monthly-spending-chart .spending-line {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: chart-line-draw 1.4s ease forwards;
+}
+
+@keyframes chart-line-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Hover nodes */
+#monthly-spending-chart .spending-node {
+    cursor: crosshair;
+    transition: r 0.18s ease;
+}
+
+#monthly-spending-chart .spending-node:hover {
+    r: 7px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .monthly-chart-card {
+        padding: 17px 12px;
+        border-radius: 16px;
+    }
+
+    .monthly-chart-total strong {
+        font-size: 26px;
+    }
+}
+
+/* ===== Clean, professional finance chart ===== */
+
+.monthly-chart-card {
+    background: #141824;
+    border: 1px solid #282e3d;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: none;
+}
+
+.monthly-chart-total {
+    margin-bottom: 12px;
+}
+
+.monthly-chart-total span {
+    color: #9299a9;
+    font-size: 13px;
+    letter-spacing: 0;
+}
+
+.monthly-chart-total strong {
+    color: #f1f3f8;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+.monthly-chart-container {
+    width: 100%;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+#monthly-spending-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+}
+
+#monthly-spending-chart text {
+    font-family: inherit;
+    font-size: 11px;
+    fill: #858da0;
+    user-select: none;
+}
+
+#monthly-spending-chart .spending-line {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    filter: none;
+}
+
+#monthly-spending-chart .spending-node {
+    cursor: crosshair;
+    transition: none;
+}
+
+#monthly-spending-chart .spending-node:hover {
+    r: 4px;
+}
+
+@media (max-width: 600px) {
+    .monthly-chart-card {
+        padding: 16px 12px;
+        border-radius: 10px;
+    }
+
+    .monthly-chart-total strong {
+        font-size: 25px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===============================
+   FOOTER
+   =============================== */
+
+.finance-footer {
+    padding: 24px 40px;
+
+    border-top: 1px solid #1c232c;
+
+    color: #596571;
+
+    font-size: 11px;
+
+    text-align: center;
+}

@@ -8,7 +8,21 @@
 // ===============================
 // DOM ELEMENTS
 // ===============================
+// ===============================
+// TODAY TABS
+// ===============================
 
+const goalsTab =
+    document.getElementById("goals-tab");
+
+const dataTab =
+    document.getElementById("data-tab");
+
+const goalsView =
+    document.getElementById("goals-view");
+
+const dataView =
+    document.getElementById("data-view");
 const currentDateElement =
     document.getElementById("current-date");
 
@@ -61,7 +75,10 @@ const goalUnitInput =
 
 const goalTargetInput =
     document.getElementById("goal-target");
-
+const goalProgressMethodInput =
+    document.getElementById(
+        "goal-progress-method"
+    );
 
 // Goals
 const goalsContainer =
@@ -83,6 +100,8 @@ const scoreValue =
 const scoreSubtext =
     document.getElementById("score-subtext");
 
+const progressContainer =
+    document.getElementById("progress-container");
 
 // ===============================
 // STATE
@@ -107,7 +126,9 @@ let goals = [];
 // All daily values
 let dailyData = {};
 
-
+let contextGoal = null;
+let goalContextMenu = null;
+let editingGoalId = null;
 // ===============================
 // MONTH NAMES
 // ===============================
@@ -168,65 +189,9 @@ function getDateKey(date) {
 }
 
 
-// ===============================
-// GOAL STORAGE
-// ===============================
-
-function loadAllGoals() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                "physicalLifeGoals"
-            );
-
-        if (!saved) {
-            return {};
-        }
-
-        const parsed =
-            JSON.parse(saved);
 
 
-        // OLD FORMAT MIGRATION
-        //
-        // If goals were previously stored
-        // as a simple array, move them into
-        // the currently displayed month.
 
-        if (Array.isArray(parsed)) {
-
-            const monthKey =
-                getMonthKey();
-
-            const migrated = {
-
-                [monthKey]: parsed
-
-            };
-
-            localStorage.setItem(
-                "physicalLifeGoals",
-                JSON.stringify(migrated)
-            );
-
-            return migrated;
-        }
-
-
-        return parsed;
-
-    } catch (error) {
-
-        console.error(
-            "Could not load goals:",
-            error
-        );
-
-        return {};
-    }
-}
 
 
 function loadGoalsForCurrentMonth() {
@@ -290,23 +255,136 @@ function loadDailyData() {
 }
 
 
-function saveDailyData() {
+// ===============================
+// SUPABASE STORAGE
+// ===============================
 
-    localStorage.setItem(
-        "physicalLifeDailyData",
-        JSON.stringify(dailyData)
-    );
+let currentUser = null;
+
+
+
+
+// ===============================
+// LOAD GOALS FROM SUPABASE
+// ===============================
+
+async function loadGoalsFromSupabase() {
+
+    const { data, error } = await window.supabaseClient
+        .from("physical_goals")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .eq("month", getMonthKey())
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Could not load goals:", error);
+        return [];
+    }
+
+    return data.map(row => ({
+        id: row.id,
+        name: row.name,
+        type: row.type,
+        unit: row.unit || "",
+        target:
+            row.target === null
+                ? null
+                : Number(row.target),
+        progress_method:
+        row.progress_method || "none"
+    }));
 }
 
 
-// Load existing daily data
-dailyData =
-    loadDailyData();
+// ===============================
+// LOAD DAILY DATA FROM SUPABASE
+// ===============================
+
+async function loadDailyDataFromSupabase() {
+
+    const { data, error } = await window.supabaseClient
+        .from("physical_daily_data")
+        .select("*")
+        .eq("user_id", currentUser.id);
+
+    if (error) {
+        console.error("Could not load daily data:", error);
+        return {};
+    }
+
+    const formattedData = {};
+
+    data.forEach(row => {
+
+        const dateKey = row.date;
+
+        if (!formattedData[dateKey]) {
+            formattedData[dateKey] = {};
+        }
+
+        formattedData[dateKey][row.goal_id] = row.value;
+
+    });
+
+    return formattedData;
+}
 
 
-// Load goals for October/current month
-goals =
-    loadGoalsForCurrentMonth();
+
+
+// ===============================
+// SAVE DAILY VALUE TO SUPABASE
+// ===============================
+
+async function saveDailyValue(goal, value) {
+
+    const dateKey = getDateKey(selectedDate);
+
+    // Empty value = remove saved entry
+    if (value === null || value === "") {
+
+        const { error } = await window.supabaseClient
+            .from("physical_daily_data")
+            .delete()
+            .eq("user_id", currentUser.id)
+            .eq("goal_id", goal.id)
+            .eq("date", dateKey);
+
+        if (error) {
+            console.error("Could not delete daily value:", error);
+            return false;
+        }
+
+        return true;
+    }
+
+
+    const { error } = await window.supabaseClient
+        .from("physical_daily_data")
+        .upsert(
+            {
+                user_id: currentUser.id,
+                goal_id: goal.id,
+                date: dateKey,
+                value: value,
+                updated_at: new Date().toISOString()
+            },
+            {
+                onConflict: "user_id,goal_id,date"
+            }
+        );
+
+    if (error) {
+        console.error("Could not save daily value:", error);
+        return false;
+    }
+
+    return true;
+}
+
+
+
 
 
 // ===============================
@@ -629,18 +707,16 @@ function selectDay(
 // CHANGE MONTH
 // ===============================
 
-function changeMonth(
+async function changeMonth(
     direction
 ) {
 
-    currentMonth +=
-        direction;
+    currentMonth += direction;
 
 
     if (currentMonth < 0) {
 
         currentMonth = 11;
-
         currentYear--;
 
     }
@@ -649,26 +725,44 @@ function changeMonth(
     if (currentMonth > 11) {
 
         currentMonth = 0;
-
         currentYear++;
 
     }
 
 
-    // Load goals belonging
-    // to this month
+    // Load goals for the new month
     goals =
-        loadGoalsForCurrentMonth();
+        await loadGoalsFromSupabase();
+
+
+    // Keep selected date inside
+    // the currently displayed month
+    const daysInMonth =
+        getDaysInMonth(
+            currentYear,
+            currentMonth
+        );
+
+    const selectedDay =
+        Math.min(
+            selectedDate.getDate(),
+            daysInMonth
+        );
+
+    selectedDate =
+        new Date(
+            currentYear,
+            currentMonth,
+            selectedDay
+        );
 
 
     updateMonthHeader();
+    displaySelectedDate();
 
     generateCalendar();
-
     renderGoals();
-
     renderDailyData();
-
     renderDailyScore();
 }
 
@@ -733,6 +827,7 @@ function clearGoalForm() {
     if (goalTargetInput) {
         goalTargetInput.value = "";
     }
+    
 }
 
 
@@ -740,7 +835,11 @@ function clearGoalForm() {
 // CREATE GOAL
 // ===============================
 
-function createGoal() {
+// ===============================
+// CREATE GOAL
+// ===============================
+
+async function createGoal() {
 
     const name =
         goalNameInput.value.trim();
@@ -762,36 +861,189 @@ function createGoal() {
         );
 
         return;
+
     }
 
 
-    const goal = {
+    const target =
+        targetValue === ""
+            ? null
+            : Number(targetValue);
 
-        id: Date.now(),
 
-        name: name,
+    // ===============================
+    // EDIT EXISTING GOAL
+    // ===============================
 
-        type: type,
+    if (editingGoalId) {
 
-        unit: unit,
+        const {
+            data,
+            error
+        } =
+            await window.supabaseClient
+                .from("physical_goals")
+                .update({
+                    name: name,
+                    type: type,
+                    unit: unit || null,
+                    target: target,
+                    progress_method:
+        goalProgressMethodInput.value
+                })
+                .eq(
+                    "id",
+                    editingGoalId
+                )
+                .select()
+                .single();
+
+
+        if (error) {
+
+            console.error(
+                "Could not update goal:",
+                error
+            );
+
+            alert(
+                "Could not update goal. Check the console."
+            );
+
+            return;
+
+        }
+
+
+        // Update local goal
+        const goalIndex =
+            goals.findIndex(
+                goal =>
+                    goal.id ===
+                    editingGoalId
+            );
+
+
+        if (goalIndex !== -1) {
+
+            goals[goalIndex] = {
+
+                id: data.id,
+
+                name: data.name,
+
+                type: data.type,
+
+                unit:
+                    data.unit || "",
+
+                target:
+                    data.target === null
+                        ? null
+                        : Number(data.target)
+
+            };
+
+        }
+
+
+        // Reset edit mode
+        editingGoalId = null;
+
+
+        renderGoals();
+
+        renderDailyData();
+
+        renderDailyScore();
+
+
+        closeGoalModalWindow();
+
+        return;
+
+    }
+
+
+    // ===============================
+    // CREATE NEW GOAL
+    // ===============================
+
+    const {
+        data,
+        error
+    } =
+        await window.supabaseClient
+            .from("physical_goals")
+            .insert({
+
+                user_id:
+                    currentUser.id,
+
+                month:
+                    getMonthKey(),
+
+                name:
+                    name,
+
+                type:
+                    type,
+
+                unit:
+                    unit || null,
+
+                target:
+                    target,
+
+                progress_method:
+                    goalProgressMethodInput.value
+
+            })
+            .select()
+            .single();
+
+
+    if (error) {
+
+        console.error(
+            "Could not create goal:",
+            error
+        );
+
+        alert(
+            "Could not save goal. Check the console."
+        );
+
+        return;
+
+    }
+
+
+    // Add newly created goal
+    goals.push({
+
+        id:
+            data.id,
+
+        name:
+            data.name,
+
+        type:
+            data.type,
+
+        unit:
+            data.unit || "",
 
         target:
-            targetValue === ""
+            data.target === null
                 ? null
-                : Number(targetValue)
+                : Number(data.target),
+        
+        progress_method:
+    data.progress_method
 
-    };
+    });
 
-
-    // Add goal to the
-    // CURRENT MONTH only
-
-    goals.push(goal);
-
-    saveGoalsForCurrentMonth();
-
-
-    // Update UI
 
     renderGoals();
 
@@ -801,8 +1053,8 @@ function createGoal() {
 
 
     closeGoalModalWindow();
-}
 
+}
 
 // ===============================
 // FORMAT GOAL TYPE
@@ -885,6 +1137,7 @@ function renderGoals() {
 }
 
 
+
 // ===============================
 // CREATE GOAL CARD
 // ===============================
@@ -897,9 +1150,23 @@ function createGoalCard(goal) {
     card.classList.add(
         "goal-card"
     );
+    card.addEventListener(
+    "contextmenu",
+    event => {
+
+        showGoalContextMenu(
+            event,
+            goal
+        );
+
+    }
+);
 
 
-    // Goal information
+    // ===========================
+    // GOAL INFORMATION
+    // ===========================
+
     const info =
         document.createElement("div");
 
@@ -928,9 +1195,7 @@ function createGoalCard(goal) {
 
 
     let targetText =
-        formatGoalType(
-            goal.type
-        );
+        formatGoalType(goal.type);
 
 
     if (
@@ -941,13 +1206,13 @@ function createGoalCard(goal) {
         targetText +=
             ` · Target: ${goal.target}`;
 
-
         if (goal.unit) {
 
             targetText +=
                 ` ${goal.unit}`;
 
         }
+
     }
 
 
@@ -961,210 +1226,299 @@ function createGoalCard(goal) {
     card.appendChild(info);
 
 
-    // ===========================
-    // YES / NO
-    // ===========================
-
-    if (
-        goal.type === "boolean"
-    ) {
-
-        const check =
-            document.createElement(
-                "button"
-            );
-
-
-        check.classList.add(
-            "goal-check"
-        );
-
-
-        check.textContent =
-            "✓";
-
-
-        const dateKey =
-            getDateKey(
-                selectedDate
-            );
-
-
-        const existingValue =
-            dailyData[
-                dateKey
-            ]?.[goal.id];
-
-
-        if (
-            existingValue === true
-        ) {
-
-            check.classList.add(
-                "completed"
-            );
-
-        }
-
-
-        check.addEventListener(
-            "click",
-            () => {
-
-                setDailyValue(
-                    goal,
-                    !check.classList.contains(
-                        "completed"
-                    )
-                );
-
-            }
-        );
-
-
-        card.appendChild(
-            check
-        );
-
-    }
-
-
-    // ===========================
-    // NUMBER / DISTANCE / DURATION
-    // ===========================
-
-    else {
-
-        const input =
-            document.createElement(
-                "input"
-            );
-
-
-        input.type =
-            "number";
-
-
-        input.step =
-            "any";
-
-
-        input.classList.add(
-            "goal-control"
-        );
-
-
-        const dateKey =
-            getDateKey(
-                selectedDate
-            );
-
-
-        const existingValue =
-            dailyData[
-                dateKey
-            ]?.[goal.id];
-
-
-        if (
-            existingValue !== undefined &&
-            existingValue !== null
-        ) {
-
-            input.value =
-                existingValue;
-
-        }
-
-
-        input.addEventListener(
-            "change",
-            () => {
-
-                setDailyValue(
-                    goal,
-                    input.value === ""
-                        ? null
-                        : Number(
-                            input.value
-                        )
-                );
-
-            }
-        );
-
-
-        card.appendChild(
-            input
-        );
-
-
-        if (goal.unit) {
-
-            const unit =
-                document.createElement(
-                    "span"
-                );
-
-
-            unit.classList.add(
-                "goal-unit"
-            );
-
-
-            unit.textContent =
-                goal.unit;
-
-
-            card.appendChild(
-                unit
-            );
-
-        }
-    }
-
-
     return card;
 }
-
-
-// ===============================
-// SET DAILY VALUE
+    // ===============================
+// GOAL CONTEXT MENU
 // ===============================
 
-function setDailyValue(
-    goal,
-    value
-) {
+function showGoalContextMenu(event, goal) {
 
-    const dateKey =
-        getDateKey(
-            selectedDate
+    event.preventDefault();
+
+    contextGoal = goal;
+
+    // Remove existing menu
+    if (goalContextMenu) {
+        goalContextMenu.remove();
+    }
+
+    // Create menu
+    goalContextMenu =
+        document.createElement("div");
+
+    goalContextMenu.classList.add(
+        "goal-context-menu"
+    );
+
+    // Edit button
+    const editButton =
+        document.createElement("button");
+
+    editButton.textContent =
+        "Edit Goal";
+
+editButton.addEventListener(
+    "click",
+    () => {
+
+        if (!contextGoal) {
+            return;
+        }
+
+        editingGoalId =
+            contextGoal.id;
+
+
+        // Fill modal with existing goal data
+
+        goalNameInput.value =
+            contextGoal.name || "";
+
+        goalTypeInput.value =
+            contextGoal.type || "boolean";
+
+        goalUnitInput.value =
+            contextGoal.unit || "";
+
+        goalTargetInput.value =
+            contextGoal.target ?? "";
+        
+        goalProgressMethodInput.value =
+    contextGoal.progress_method || "none";
+
+
+        hideGoalContextMenu();
+
+
+        // Open existing goal modal
+
+        goalModal.classList.remove(
+            "hidden"
         );
 
+        goalNameInput.focus();
 
-    if (!dailyData[dateKey]) {
+    }
+);
 
-        dailyData[dateKey] = {};
+
+    // Delete button
+    const deleteButton =
+        document.createElement("button");
+
+    deleteButton.textContent =
+        "Delete Goal";
+
+    deleteButton.classList.add(
+        "delete-goal-option"
+    );
+
+deleteButton.addEventListener(
+    "click",
+    async () => {
+
+        if (!contextGoal) {
+            return;
+        }
+
+
+        const goalToDelete =
+            contextGoal;
+
+
+        const confirmed =
+            confirm(
+                `Delete "${goalToDelete.name}"?`
+            );
+
+
+        if (!confirmed) {
+            hideGoalContextMenu();
+            return;
+        }
+
+
+        try {
+
+            const {
+                error
+            } =
+                await window.supabaseClient
+                    .from("physical_goals")
+                    .delete()
+                    .eq("id", goalToDelete.id);
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            // Remove from local goals array
+            goals =
+                goals.filter(
+                    goal =>
+                        goal.id !==
+                        goalToDelete.id
+                );
+
+
+            // Remove any locally loaded daily data
+            Object.keys(dailyData)
+                .forEach(dateKey => {
+
+                    if (
+                        dailyData[dateKey]
+                        &&
+                        dailyData[dateKey][goalToDelete.id]
+                        !== undefined
+                    ) {
+
+                        delete dailyData[dateKey][goalToDelete.id];
+
+                    }
+
+                });
+
+
+            hideGoalContextMenu();
+
+            renderGoals();
+
+            renderDailyData();
+
+
+        } catch (error) {
+
+            console.error(
+                "Error deleting goal:",
+                error
+            );
+
+            alert(
+                "Failed to delete goal. Please try again."
+            );
+
+        }
+
+    }
+);
+
+
+    goalContextMenu.appendChild(
+        editButton
+    );
+
+    goalContextMenu.appendChild(
+        deleteButton
+    );
+
+    document.body.appendChild(
+        goalContextMenu
+    );
+
+
+    // Position menu
+    const menuWidth =
+        goalContextMenu.offsetWidth;
+
+    const menuHeight =
+        goalContextMenu.offsetHeight;
+
+    let x = event.clientX;
+    let y = event.clientY;
+
+
+    if (
+        x + menuWidth >
+        window.innerWidth
+    ) {
+
+        x =
+            window.innerWidth -
+            menuWidth -
+            8;
 
     }
 
 
-    dailyData[
-        dateKey
-    ][goal.id] =
-        value;
+    if (
+        y + menuHeight >
+        window.innerHeight
+    ) {
+
+        y =
+            window.innerHeight -
+            menuHeight -
+            8;
+
+    }
 
 
-    saveDailyData();
+    goalContextMenu.style.left =
+        `${x}px`;
 
+    goalContextMenu.style.top =
+        `${y}px`;
+}
+
+
+// ===============================
+// HIDE CONTEXT MENU
+// ===============================
+
+function hideGoalContextMenu() {
+
+    if (goalContextMenu) {
+
+        goalContextMenu.remove();
+
+        goalContextMenu =
+            null;
+
+    }
+
+    contextGoal = null;
+}
+
+
+
+async function setDailyValue(goal, value) {
+
+    const dateKey = getDateKey(selectedDate);
+
+    if (!dailyData[dateKey]) {
+        dailyData[dateKey] = {};
+    }
+
+    if (value === null || value === "") {
+        delete dailyData[dateKey][goal.id];
+    } else {
+        dailyData[dateKey][goal.id] = value;
+    }
+
+    const saved = await saveDailyValue(goal, value);
+
+    if (!saved) {
+        alert("Could not save your data.");
+        return;
+    }
 
     renderGoals();
-
     renderDailyData();
-
     renderDailyScore();
+    renderProgress();
 }
+  
+
+
+
+
+
+
+
+
 
 
 // ===============================
@@ -1212,6 +1566,461 @@ function renderDailyData() {
 }
 
 
+
+// ===============================
+// PROGRESS CARD
+// ===============================
+
+function createProgressCard(
+    goal,
+    progressValue = 0,
+    progressPercent = 0
+) {
+
+    const card =
+        document.createElement("div");
+
+    card.classList.add(
+        "progress-card"
+    );
+
+
+    // ===============================
+    // HEADER
+    // ===============================
+
+    const header =
+        document.createElement("div");
+
+    header.classList.add(
+        "progress-card-header"
+    );
+
+
+    const name =
+        document.createElement("div");
+
+    name.classList.add(
+        "progress-goal-name"
+    );
+
+    name.textContent =
+        goal.name;
+
+
+    const method =
+        document.createElement("div");
+
+    method.classList.add(
+        "progress-method"
+    );
+
+    method.textContent =
+        formatProgressMethod(
+            goal.progress_method
+        );
+
+
+    header.appendChild(name);
+    header.appendChild(method);
+
+
+    // ===============================
+    // VALUE
+    // ===============================
+
+    const value =
+        document.createElement("div");
+
+    value.classList.add(
+        "progress-value"
+    );
+
+    value.textContent =
+        formatProgressValue(
+            goal,
+            progressValue
+        );
+
+
+    // ===============================
+    // PROGRESS BAR
+    // ===============================
+
+    const bar =
+        document.createElement("div");
+
+    bar.classList.add(
+        "progress-bar"
+    );
+
+
+    const fill =
+        document.createElement("div");
+
+    fill.classList.add(
+        "progress-bar-fill"
+    );
+
+    fill.style.width =
+        `${Math.min(
+            Math.max(progressPercent, 0),
+            100
+        )}%`;
+
+
+    bar.appendChild(fill);
+
+
+    card.appendChild(header);
+
+    card.appendChild(value);
+
+    card.appendChild(bar);
+
+
+    return card;
+}
+// ===============================
+// RENDER PROGRESS
+// ===============================
+function calculateCountProgress(goal) {
+
+    let completedDays = 0;
+
+    Object.keys(dailyData).forEach(dateKey => {
+
+        const dayData =
+            dailyData[dateKey];
+
+        if (!dayData) {
+            return;
+        }
+
+        const value =
+            dayData[goal.id];
+
+        if (value === true) {
+            completedDays++;
+        }
+
+    });
+
+    return completedDays;
+}
+function calculateSumProgress(goal) {
+    let total = 0;
+
+    const monthKey = getMonthKey();
+
+    Object.keys(dailyData).forEach(dateKey => {
+
+        // Only use dates from the current month
+        if (!dateKey.startsWith(monthKey)) {
+            return;
+        }
+
+        const dayData = dailyData[dateKey];
+
+        if (!dayData) {
+            return;
+        }
+
+        const value = dayData[goal.id];
+
+        if (
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        ) {
+            const number = Number(value);
+
+            if (!isNaN(number)) {
+                total += number;
+            }
+        }
+    });
+
+    return total;
+}
+function calculateAverageProgress(goal) {
+
+    let total = 0;
+    let count = 0;
+
+    const monthKey = getMonthKey();
+
+    Object.keys(dailyData).forEach(dateKey => {
+
+        // Only use dates from current month
+        if (!dateKey.startsWith(monthKey)) return;
+
+        const dayData = dailyData[dateKey];
+
+        if (!dayData) return;
+
+        const value = dayData[goal.id];
+
+        if (
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        ) {
+
+            const number = Number(value);
+
+            if (!isNaN(number)) {
+
+                total += number;
+                count++;
+
+            }
+        }
+    });
+
+    if (count === 0) {
+        return 0;
+    }
+
+    return total / count;
+}
+
+function calculateTargetProgress(goal) {
+
+    if (
+        goal.target === null ||
+        goal.target === undefined ||
+        goal.target === 0
+    ) {
+        return 0;
+    }
+
+    let total = 0;
+    let monthKey = getMonthKey();
+
+    Object.keys(dailyData).forEach(dateKey => {
+
+        if (!dateKey.startsWith(monthKey)) return;
+
+        const dayData = dailyData[dateKey];
+
+        if (!dayData) return;
+
+        const value = dayData[goal.id];
+
+        if (
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        ) {
+
+            const number = Number(value);
+
+            if (!isNaN(number)) {
+                total += number;
+            }
+        }
+    });
+
+    return Math.min(
+        100,
+        (total / goal.target) * 100
+    );
+}
+function renderProgress() {
+
+    if (!progressContainer) {
+        return;
+    }
+
+
+    progressContainer.innerHTML = "";
+
+
+    // No goals
+    if (goals.length === 0) {
+
+        const empty =
+            document.createElement("div");
+
+        empty.classList.add(
+            "progress-empty"
+        );
+
+        empty.textContent =
+            "Add goals to start tracking progress.";
+
+        progressContainer.appendChild(
+            empty
+        );
+
+        return;
+    }
+
+
+    goals.forEach(goal => {
+
+    if (
+        goal.progress_method === "none"
+    ) {
+        return;
+    }
+
+
+    let progressValue = 0;
+
+
+    // Count completed days
+// Count completed days
+if (
+    goal.progress_method === "count"
+) {
+
+    progressValue =
+        calculateCountProgress(
+            goal
+        );
+
+}
+
+
+// Sum all daily values
+if (
+    goal.progress_method === "sum"
+) {
+
+    progressValue =
+        calculateSumProgress(
+            goal
+        );
+
+}
+
+// Average daily values
+if (
+    goal.progress_method === "average"
+) {
+
+    progressValue =
+        calculateAverageProgress(
+            goal
+        );
+
+}
+// Target achievement
+if (
+    goal.progress_method === "target"
+) {
+
+    progressValue =
+        calculateTargetProgress(
+            goal
+        );
+
+}
+
+    const card =
+        createProgressCard(
+            goal,
+            progressValue,
+            0
+        );
+
+
+    progressContainer.appendChild(
+        card
+    );
+
+});
+
+}
+
+
+// ===============================
+// PROGRESS METHOD LABEL
+// ===============================
+
+function formatProgressMethod(
+    method
+) {
+
+    switch (method) {
+
+        case "count":
+            return "Count";
+
+        case "sum":
+            return "Sum";
+
+        case "average":
+            return "Average";
+
+        case "target":
+            return "Target Achievement";
+
+        default:
+            return "Count";
+
+    }
+
+}
+
+
+// ===============================
+// PROGRESS VALUE LABEL
+// ===============================
+
+function formatProgressValue(
+    goal,
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "0";
+
+    }
+
+    // Target Achievement
+    if (
+        goal.progress_method === "target"
+    ) {
+
+        return `${Math.round(value)}%`;
+
+    }
+
+    // Average
+    if (
+        goal.progress_method === "average"
+    ) {
+
+        return `${Number(value).toFixed(1)} ${goal.unit || ""}`.trim();
+
+    }
+
+    // Count
+    if (
+        goal.progress_method === "count"
+    ) {
+
+        return `${value} days`;
+
+    }
+
+    // Sum
+    if (goal.unit) {
+
+        return `${Number(value).toLocaleString()} ${goal.unit}`;
+
+    }
+
+    return `${value}`;
+
+}
 // ===============================
 // CREATE DAILY DATA CARD
 // ===============================
@@ -1699,19 +2508,84 @@ if (
 
 
 // ===============================
-// INITIALIZE
+// INITIALIZE PHYSICAL TRACKER
 // ===============================
 
-displayCurrentDate();
+async function initializePhysicalTracker() {
 
-displaySelectedDate();
+    const {
+        data: { user },
+        error
+    } = await window.supabaseClient.auth.getUser();
 
-updateMonthHeader();
 
-generateCalendar();
+    // User is not logged in
+    if (error || !user) {
 
-renderGoals();
+        window.location.href = "login.html";
 
-renderDailyData();
+        return;
+    }
 
-renderDailyScore();
+
+    // Store logged-in user
+    currentUser = user;
+
+
+    // Load data from Supabase
+    dailyData = await loadDailyDataFromSupabase();
+
+    goals = await loadGoalsFromSupabase();
+
+
+    // Render everything
+    displayCurrentDate();
+    displaySelectedDate();
+    updateMonthHeader();
+
+    generateCalendar();
+
+    renderGoals();
+    renderDailyData();
+    renderDailyScore();
+    renderProgress();
+}
+// ===============================
+// TODAY TABS
+// ===============================
+
+if (goalsTab && dataTab) {
+
+    goalsTab.addEventListener(
+        "click",
+        () => {
+
+            goalsTab.classList.add("active");
+            dataTab.classList.remove("active");
+
+            goalsView.classList.add("active");
+            dataView.classList.remove("active");
+
+        }
+    );
+
+
+    dataTab.addEventListener(
+        "click",
+        () => {
+
+            dataTab.classList.add("active");
+            goalsTab.classList.remove("active");
+
+            dataView.classList.add("active");
+            goalsView.classList.remove("active");
+
+            renderDailyData();
+
+        }
+    );
+
+}
+
+// Start tracker
+initializePhysicalTracker();
